@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CoughTrack Simulation</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #e0f7fa;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      padding: 20px;
+      box-sizing: border-box;
+      position: relative;
+      height: 90vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      display: none;
+    }
+
+    .logo {
+      font-size: 40px;
+      font-weight: bold;
+      color: #0077b6;
+      margin-bottom: 5px;
+      user-select: none;
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: transparent;
+      padding: 0;
+      border-radius: 0;
+      box-shadow: none;
+      z-index: 1001;
+      width: max-content;
+    }
+
+    .patient-info {
+      font-size: 20px;
+      font-weight: 600;
+      color: #004d61;
+      margin-bottom: 30px;
+      user-select: none;
+      min-height: 30px;
+      margin-top: 60px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .section {
+      width: 100%;
+      max-width: 600px;
+      margin: 10px auto;
+    }
+
+    button {
+      background-color: #0077b6;
+      color: white;
+      padding: 18px 0;
+      margin: 15px auto;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 22px;
+      width: 100%;
+      max-width: 320px;
+      user-select: none;
+      transition: background-color 0.3s;
+      display: block;
+    }
+
+    button:hover {
+      background-color: #005f8a;
+    }
+
+    label, select, input {
+      display: block;
+      margin: 15px auto;
+      font-size: 20px;
+      max-width: 320px;
+      width: 100%;
+      user-select: none;
+    }
+
+    input, select {
+      padding: 12px 15px;
+      border-radius: 10px;
+      border: 1.5px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    #results p {
+      font-weight: bold;
+      font-size: 22px;
+      margin: 12px 0;
+    }
+
+    #backButton {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #0077b6;
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      user-select: none;
+      z-index: 1000;
+      display: none;
+      font-weight: 900;
+      font-size: 36px;
+      line-height: 1;
+    }
+
+    #backButton::before {
+      content: "←";
+      position: relative;
+      top: -2px;
+      user-select: none;
+    }
+
+    #adjustments {
+      margin-top: 30px;
+    }
+
+    #adjustments-label {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .adjust-row {
+      display: flex;
+      justify-content: space-around;
+      gap: 60px;
+      width: 100%;
+    }
+
+    .adjust-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .adjust-button {
+      width: 45px;
+      height: 45px;
+      font-size: 26px;
+      border-radius: 50%;
+      padding: 0;
+      line-height: 1;
+      background-color: #0077b6;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .adjust-value {
+      font-size: 22px;
+      min-width: 100px;
+      font-weight: bold;
+    }
+
+    #splash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background-color: #e0f7fa;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      animation: fadeOut 1s ease-out 4s forwards;
+      z-index: 2000;
+    }
+
+    #splash .logo-icon {
+      font-size: 60px;
+      color: #0077b6;
+      animation: scaleUp 1s ease-out forwards;
+    }
+
+    #splash .logo-title {
+      font-size: 48px;
+      font-weight: bold;
+      color: #0077b6;
+      animation: fadeIn 2s ease-in 1s forwards;
+      opacity: 0;
+      margin-top: 10px;
+      user-select: none;
+    }
+
+    #splash .logo-subtitle {
+      font-size: 24px;
+      color: #004d61;
+      margin-top: 10px;
+      animation: fadeIn 2s ease-in 2s forwards;
+      opacity: 0;
+      user-select: none;
+    }
+
+    @keyframes scaleUp {
+      from { transform: scale(0.1); opacity: 0; }
+      to { transform: scale(1.4); opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+      to { opacity: 0; visibility: hidden; }
+    }
+
+    #startSessionButton {
+      background-color: #0077b6;
+      color: white;
+      padding: 18px 0;
+      margin: 20px auto 0 auto;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 22px;
+      width: 100%;
+      max-width: 320px;
+      user-select: none;
+      display: block;
+      transition: background-color 0.3s;
+    }
+
+    #startSessionButton:hover {
+      background-color: #005f8a;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="splash">
+    <div class="logo-icon">💨</div>
+    <div class="logo-title">CoughTrack</div>
+    <div class="logo-subtitle">Free your breath</div>
+  </div>
+
+  <div class="container">
+    <div class="logo">💨 CoughTrack</div>
+    <div id="patientInfo" class="patient-info"></div>
+
+    <button id="backButton" onclick="goBack()"></button>
+
+    <div id="login" class="section">
+      <p style="font-size: 24px; font-weight: 600; margin-bottom: 20px;">Login:</p>
+      <button onclick="chooseRole('home')">At home</button>
+      <button onclick="chooseRole('hospital')">In hospital</button>
+    </div>
+
+    <div id="authSection" class="section hidden">
+      <h3 id="roleTitle" style="font-size: 26px; margin-bottom: 20px;"></h3>
+      <input type="email" id="email" placeholder="Email">
+      <input type="password" id="password" placeholder="Password">
+      <button onclick="performLogin()">Login</button>
+    </div>
+
+    <div id="hospitalSection" class="section hidden">
+      <label>Illness Type:
+        <select id="illness">
+          <option value="NMD">Neuromuscular disorders</option>
+          <option value="SCI">Spinal cord injuries</option>
+          <option value="CRC">Chronic respiratory conditions</option>
+          <option value="PED">Pediatric patient</option>
+          <option value="VENT">Ventilated patient</option>
+        </select>
+      </label>
+
+      <label for="patientCode">Patient code:</label>
+      <input type="text" id="patientCode" placeholder="Enter patient code">
+      <button onclick="searchPatient()">Search</button>
+    </div>
+
+    <div id="homeSection" class="section hidden">
+      <p style="font-size: 22px; margin-bottom: 20px;">Press to start cough efficiency test:</p>
+      <button onclick="runTest()">Start Test</button>
+      <button onclick="alert('Past values feature coming soon!')">Past Values</button>
+    </div>
+    
+    <div id="hospitalHomeSection" class="section hidden">
+  <p id="hospitalPatientName" style="font-size: 22px; font-weight: 600; margin-bottom: 10px;"></p>
+  <p style="font-size: 22px; margin-bottom: 20px;">Press to start cough efficiency test:</p>
+  <button onclick="runTestHospital()">Start Test</button>
+  <button onclick="alert('Past values feature coming soon!')">Past Values</button>
+</div>
+
+
+    <div id="results" class="section hidden">
+      <p>🫁 Cough efficiency: <span id="efficiency"></span>%</p>
+      <p>📈 Recommended pressure: <span id="finalPressure"></span> mmHg</p>
+
+      <div id="adjustments" class="hidden">
+        <div id="adjustments-label">Adjust pressure:</div>
+        <div class="adjust-row">
+          <div class="adjust-group">
+            <button class="adjust-button" onclick="adjust('pressure1', -1)">−</button>
+            <div class="adjust-value"><span id="pressure1">-40</span> mmHg</div>
+            <button class="adjust-button" onclick="adjust('pressure1', 1)">+</button>
+          </div>
+          <div class="adjust-group">
+            <button class="adjust-button" onclick="adjust('pressure2', -1)">−</button>
+            <div class="adjust-value"><span id="pressure2">+40</span> mmHg</div>
+            <button class="adjust-button" onclick="adjust('pressure2', 1)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <button id="startSessionButton" onclick="startSession()">Start session</button>
+    </div>
+
+  </div>
+
+  <script>
+    let role = "";
+    let efficiency = 0;
+    let recommendedPressure = 40;
+
+    const homeUserData = {
+      email: "mario.rossi@example.com",
+      name: "Mario Rossi",
+      illness: "COPD"
+    };
+
+    const fakePatient = {
+      code: "FAKE001",
+      name: "Luigi Bianchi",
+      illness: "Asthma"
+    };
+
+    const backButton = document.getElementById("backButton");
+    const patientInfoDiv = document.getElementById("patientInfo");
+
+    function chooseRole(selectedRole) {
+      role = selectedRole;
+      document.getElementById("login").classList.add("hidden");
+      document.getElementById("authSection").classList.remove("hidden");
+      document.getElementById("roleTitle").textContent = "Login as " + (role === "home" ? "At home" : "In hospital");
+      toggleBackButton(true);
+      patientInfoDiv.textContent = "";
+    }
+
+    function performLogin() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!email || !password) {
+        alert("Please enter email and password.");
+        return;
+      }
+
+      if (role === "home") {
+        if (email.toLowerCase() === homeUserData.email.toLowerCase()) {
+          patientInfoDiv.textContent = homeUserData.name + " - " + homeUserData.illness;
+        } else {
+          alert("User not found.");
+          return;
+        }
+      } else {
+        patientInfoDiv.textContent = "";
+      }
+
+      document.getElementById("authSection").classList.add("hidden");
+
+      if (role === "hospital") {
+        document.getElementById("hospitalSection").classList.remove("hidden");
+      } else {
+        document.getElementById("homeSection").classList.remove("hidden");
+      }
+
+      toggleBackButton(true);
+    }
+
+    function runTest() {
+      efficiency = Math.floor(Math.random() * 100) + 1;
+
+      if (role === "hospital") {
+        // Nel caso del paziente fittizio, non mostriamo recommendedPressure né modifiche (come lato home)
+        recommendedPressure = 40;
+        showResults(recommendedPressure);
+        document.getElementById("adjustments").classList.remove("hidden");
+        document.getElementById("startSessionButton").style.display = "block";
+      } else {
+        recommendedPressure = 40;
+        showResults(recommendedPressure);
+        document.getElementById("adjustments").classList.remove("hidden");
+        document.getElementById("startSessionButton").style.display = "block";
+      }
+
+      if (role === "hospital") {
+        document.getElementById("homeSection").classList.add("hidden");
+        document.getElementById("hospitalSection").classList.add("hidden");
+      } else {
+        document.getElementById("homeSection").classList.add("hidden");
+      }
+
+      toggleBackButton(true);
+    }
+
+    function showResults(pressure) {
+      document.getElementById("efficiency").textContent = efficiency;
+      document.getElementById("finalPressure").textContent = pressure;
+      document.getElementById("results").classList.remove("hidden");
+    }
+
+    function adjust(pressureId, delta) {
+      const span = document.getElementById(pressureId);
+      let currentValue = parseInt(span.textContent.replace(/[^\d\-+]/g, ""));
+      currentValue += delta;
+      span.textContent = (currentValue > 0 ? "+" : "") + currentValue;
+    }
+
+    function startSession() {
+      alert("Session started!");
+    }
+
+    function searchPatient() {
+  const codeInput = document.getElementById("patientCode").value.trim().toUpperCase();
+  const illnessSelect = document.getElementById("illness");
+  const selectedIllnessText = illnessSelect.options[illnessSelect.selectedIndex].text;
+
+  if (codeInput === fakePatient.code) {
+    // Mostro nome, cognome e malattia (quella selezionata dal medico)
+    const hospitalHome = document.getElementById("hospitalHomeSection");
+    const hospitalSection = document.getElementById("hospitalSection");
+
+    hospitalSection.classList.add("hidden");  // nascondo ricerca
+    hospitalHome.classList.remove("hidden");  // mostro "home" hospital
+
+    document.getElementById("hospitalPatientName").textContent = fakePatient.name + " - " + selectedIllnessText;
+
+    toggleBackButton(true);
+  } else {
+    alert("Patient not found.");
+  }
+}
+
+
+    function showHospitalTestOptions() {
+      // Creo pulsanti Start Test e Past Values in hospital lato sotto titolo
+      let existing = document.getElementById("hospitalTestButtons");
+      if (!existing) {
+        const container = document.createElement("div");
+        container.id = "hospitalTestButtons";
+        container.style.marginTop = "20px";
+
+        const startTestBtn = document.createElement("button");
+        startTestBtn.textContent = "Start Test";
+        startTestBtn.onclick = () => {
+          runTestHospital();
+        };
+
+        const pastValuesBtn = document.createElement("button");
+        pastValuesBtn.textContent = "Past Values";
+        pastValuesBtn.onclick = () => {
+          alert("Past values feature coming soon!");
+        };
+
+        container.appendChild(startTestBtn);
+        container.appendChild(pastValuesBtn);
+
+        patientInfoDiv.insertAdjacentElement("afterend", container);
+      }
+    }
+
+   function runTestHospital() {
+  efficiency = Math.floor(Math.random() * 100) + 1;
+  recommendedPressure = 40; // se vuoi 40mmHg come richiesto prima
+
+  // Nascondo hospitalHomeSection e mostro risultati
+  document.getElementById("hospitalHomeSection").classList.add("hidden");
+  showResults(recommendedPressure);
+  document.getElementById("adjustments").classList.remove("hidden");
+  document.getElementById("startSessionButton").style.display = "block";
+
+  toggleBackButton(true);
+}
+
+    function goBack() {
+      const resultsVisible = !document.getElementById("results").classList.contains("hidden");
+      const homeVisible = !document.getElementById("homeSection").classList.contains("hidden");
+      const hospitalVisible = !document.getElementById("hospitalSection").classList.contains("hidden");
+      const authVisible = !document.getElementById("authSection").classList.contains("hidden");
+
+      if (resultsVisible) {
+        // Torna alla schermata precedente
+        document.getElementById("results").classList.add("hidden");
+        document.getElementById("adjustments").classList.add("hidden");
+        document.getElementById("startSessionButton").style.display = "none";
+
+        if (role === "home") {
+          document.getElementById("homeSection").classList.remove("hidden");
+        } else {
+          // Torna alla schermata dei pulsanti start test e past values (se paziente trovato)
+          const btns = document.getElementById("hospitalTestButtons");
+          if (btns) btns.style.display = "block";
+          else document.getElementById("hospitalSection").classList.remove("hidden");
+        }
+      } else if (homeVisible) {
+        // Torna a login
+        document.getElementById("homeSection").classList.add("hidden");
+        document.getElementById("authSection").classList.remove("hidden");
+        patientInfoDiv.textContent = homeUserData.name + " - " + homeUserData.illness;
+      } else if (hospitalVisible) {
+        // Torna a login
+        document.getElementById("hospitalSection").classList.add("hidden");
+        document.getElementById("authSection").classList.remove("hidden");
+        patientInfoDiv.textContent = "";
+        const btns = document.getElementById("hospitalTestButtons");
+        if (btns) btns.remove();
+      } else if (authVisible) {
+        // Torna a login selezione ruolo
+        document.getElementById("authSection").classList.add("hidden");
+        document.getElementById("login").classList.remove("hidden");
+        patientInfoDiv.textContent = "";
+        const btns = document.getElementById("hospitalTestButtons");
+        if (btns) btns.remove();
+      }
+
+      // Mostra o nascondi il back button in base alla schermata
+      if (document.getElementById("login").classList.contains("hidden")) {
+        toggleBackButton(true);
+      } else {
+        toggleBackButton(false);
+      }
+    }
+
+    function toggleBackButton(show) {
+      backButton.style.display = show ? "flex" : "none";
+    }
+
+    window.onload = () => {
+      setTimeout(() => {
+        document.getElementById("splash").style.display = "none";
+        document.querySelector(".container").style.display = "flex";
+        toggleBackButton(false);
+      }, 4200);
+    };
+  </script>
+
+</body>
+</html>
